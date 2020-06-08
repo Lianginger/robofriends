@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react'
 import { debounce } from 'lodash'
+import { connect } from 'react-redux'
 
 import SearchBox from '../components/SearchBox'
 import Scroll from '../components/Scroll'
 import CardList from '../components/CardList'
 import ErrorBoundary from '../components/ErrorBoundary'
 
+import { setSearchField } from '../actions'
+
 import './App.css'
 
-function App() {
+function App({ searchField, handleSearchField }) {
   const [state, setState] = useState({
     robots: [],
-    searchField: '',
   })
-  const { robots, searchField } = state
+  const { robots } = state
   const filteredRobots =
     robots.filter((robot) =>
       robot.name.toLowerCase().includes(searchField.toLowerCase())
@@ -51,13 +53,18 @@ function App() {
     const searchFieldValue = e.target.value
     handleSearchFieldDebounce(searchFieldValue)
   }
+}
 
-  function handleSearchField(searchFieldValue) {
-    setState((state) => ({
-      ...state,
-      searchField: searchFieldValue,
-    }))
+const mapStateToProps = (state) => {
+  return {
+    searchField: state.searchField,
   }
 }
 
-export default App
+const mapDispatchToProps = (dispatch) => {
+  return {
+    handleSearchField: (searchFieldValue) => dispatch(setSearchField(searchFieldValue)),
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(App)
