@@ -3,18 +3,20 @@ import ReactDOM from 'react-dom'
 import './index.css'
 import App from './containers/App'
 import { Provider } from 'react-redux'
-import { createStore, applyMiddleware, compose } from 'redux'
+import { createStore, applyMiddleware, combineReducers, compose } from 'redux'
 import { createLogger } from 'redux-logger'
-import { searchRobots } from './reducers'
+import { searchRobots, requestRobots } from './reducers'
+import thunkMiddleware from 'redux-thunk'
 
 import 'tachyons'
 import * as serviceWorker from './serviceWorker'
 
+const rootReducer = combineReducers({ searchRobots, requestRobots })
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose
 const logger = createLogger()
 const store = createStore(
-  searchRobots,
-  composeEnhancers(applyMiddleware(logger))
+  rootReducer,
+  composeEnhancers(applyMiddleware(thunkMiddleware, logger))
 )
 
 ReactDOM.render(

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { debounce } from 'lodash'
 import { connect } from 'react-redux'
 
@@ -7,15 +7,18 @@ import Scroll from '../components/Scroll'
 import CardList from '../components/CardList'
 import ErrorBoundary from '../components/ErrorBoundary'
 
-import { setSearchField } from '../actions'
+import { setSearchField, requestRobots } from '../actions'
 
 import './App.css'
 
-function App({ searchField, handleSearchField }) {
-  const [state, setState] = useState({
-    robots: [],
-  })
-  const { robots } = state
+function App({
+  searchField,
+  handleSearchField,
+  robots,
+  isPending,
+  error,
+  onRequestRobots,
+}) {
   const filteredRobots =
     robots.filter((robot) =>
       robot.name.toLowerCase().includes(searchField.toLowerCase())
@@ -23,15 +26,8 @@ function App({ searchField, handleSearchField }) {
   const handleSearchFieldDebounce = debounce(handleSearchField, 250)
 
   useEffect(() => {
-    fetch('https://jsonplaceholder.typicode.com/users')
-      .then((res) => res.json())
-      .then((users) => {
-        setState((state) => ({
-          ...state,
-          robots: users,
-        }))
-      })
-  }, [])
+    onRequestRobots()
+  }, [onRequestRobots])
 
   return (
     <div className='tc'>
@@ -39,10 +35,10 @@ function App({ searchField, handleSearchField }) {
         <h1 className='f2'>RoboFriend</h1>
         <SearchBox onSearchChange={onSearchChange} />
         <Scroll>
-          {robots.length ? (
-            <CardList robots={filteredRobots} />
-          ) : (
+          {isPending ? (
             <h4>loading...</h4>
+          ) : (
+            <CardList robots={filteredRobots} />
           )}
         </Scroll>
       </ErrorBoundary>
@@ -57,13 +53,18 @@ function App({ searchField, handleSearchField }) {
 
 const mapStateToProps = (state) => {
   return {
-    searchField: state.searchField,
+    searchField: state.searchRobots.searchField,
+    robots: state.requestRobots.robots,
+    isPending: state.requestRobots.isPending,
+    error: state.requestRobots.error,
   }
 }
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    handleSearchField: (searchFieldValue) => dispatch(setSearchField(searchFieldValue)),
+    handleSearchField: (searchFieldValue) =>
+      dispatch(setSearchField(searchFieldValue)),
+    onRequestRobots: () => dispatch(requestRobots()),
   }
 }
 
